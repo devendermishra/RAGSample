@@ -4,10 +4,9 @@ Web scraping functionality for extracting content from URLs.
 
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, urljoin
-from typing import Optional, Dict, Any
+from urllib.parse import urlparse
+from typing import Dict, Any
 import re
-from pathlib import Path
 
 
 class WebScraper:
@@ -96,10 +95,31 @@ class WebScraper:
             # Extract main content
             text_content = self._extract_text_content(soup)
             
-            if not text_content.strip():
+            # Debug: Check if we got meaningful content
+            if not text_content or len(text_content.strip()) < 50:
+                # Try alternative extraction methods
+                print(f"Warning: Low content extracted ({len(text_content)} chars), trying alternative methods...")
+                
+                # Try extracting from all paragraphs
+                paragraphs = soup.find_all('p')
+                if paragraphs:
+                    alt_text = ' '.join([p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True)])
+                    if len(alt_text) > len(text_content):
+                        text_content = alt_text
+                
+                # Try extracting from all divs with text
+                if len(text_content) < 50:
+                    divs = soup.find_all('div')
+                    div_texts = [div.get_text(strip=True) for div in divs if div.get_text(strip=True)]
+                    if div_texts:
+                        alt_text = ' '.join(div_texts)
+                        if len(alt_text) > len(text_content):
+                            text_content = alt_text
+            
+            if not text_content or len(text_content.strip()) < 20:
                 return {
                     "success": False,
-                    "error": "No text content found on the page",
+                    "error": f"No meaningful text content found on the page (got {len(text_content)} characters)",
                     "content": "",
                     "metadata": metadata
                 }
@@ -178,40 +198,80 @@ class WebScraper:
         Returns:
             Extracted text content
         """
-        # Remove script and style elements
-        for script in soup(["script", "style", "nav", "footer", "header", "aside"]):
-            script.decompose()
+        # Remove unwanted elements
+        for element in soup(["script", "style", "nav", "footer", "header", "aside", "noscript"]):
+            element.decompose()
         
-        # Try to find main content area
+        # Try to find main content area with multiple strategies
         main_content = None
         
-        # Look for common main content selectors
-        main_selectors = [
+        # Strategy 1: Look for semantic HTML5 elements
+        semantic_selectors = [
             'main',
             'article',
             '[role="main"]',
-            '.content',
             '.main-content',
+            '.content',
             '.post-content',
             '.entry-content',
+            '.article-content',
             '#content',
-            '.article-content'
+            '#main',
+            '.main'
         ]
         
-        for selector in main_selectors:
-            main_content = soup.select_one(selector)
-            if main_content:
-                break
+        for selector in semantic_selectors:
+            try:
+                main_content = soup.select_one(selector)
+                if main_content and main_content.get_text(strip=True):
+                    break
+            except Exception:
+                continue
         
-        # If no main content found, use body
+        # Strategy 2: Look for common content patterns
+        if not main_content:
+            content_patterns = [
+                '.post',
+                '.entry',
+                '.article',
+                '.story',
+                '.text',
+                '.body',
+                'div[class*="content"]',
+                'div[class*="text"]',
+                'div[class*="article"]'
+            ]
+            
+            for pattern in content_patterns:
+                try:
+                    main_content = soup.select_one(pattern)
+                    if main_content and main_content.get_text(strip=True):
+                        break
+                except Exception:
+                    continue
+        
+        # Strategy 3: Find the largest text block
+        if not main_content:
+            # Get all divs and find the one with most text
+            divs = soup.find_all('div')
+            if divs:
+                largest_div = max(divs, key=lambda x: len(x.get_text(strip=True)))
+                if len(largest_div.get_text(strip=True)) > 100:  # Minimum content threshold
+                    main_content = largest_div
+        
+        # Strategy 4: Use body as fallback
         if not main_content:
             main_content = soup.find('body')
         
+        # Final fallback: use entire soup
         if not main_content:
             main_content = soup
         
-        # Extract text
-        text = main_content.get_text()
+        # Extract text with proper handling
+        try:
+            text = main_content.get_text(separator=' ', strip=True)
+        except Exception:
+            text = str(main_content)
         
         # Clean up text
         text = self._clean_text(text)
@@ -227,14 +287,39 @@ class WebScraper:
         Returns:
             Cleaned text
         """
+        if not text:
+            return ""
+        
+        # Remove HTML entities
+        text = text.replace('&nbsp;', ' ')
+        text = text.replace('&amp;', '&')
+        text = text.replace('&lt;', '<')
+        text = text.replace('&gt;', '>')
+        text = text.replace('&quot;', '"')
+        text = text.replace('&#39;', "'")
+        
         # Replace multiple whitespace with single space
         text = re.sub(r'\s+', ' ', text)
         
         # Remove leading/trailing whitespace
         text = text.strip()
         
-        # Remove excessive newlines
-        text = re.sub(r'\n\s*\n', '\n\n', text)
+        # Remove excessive newlines and normalize line breaks
+        text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+        
+        # Remove very short lines that are likely navigation or ads
+        lines = text.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            line = line.strip()
+            if len(line) > 10 or line in ['', ' ', '\t']:  # Keep meaningful content
+                cleaned_lines.append(line)
+        
+        text = '\n'.join(cleaned_lines)
+        
+        # Final cleanup
+        text = re.sub(r'\s+', ' ', text)
+        text = text.strip()
         
         return text
     
@@ -252,3 +337,39 @@ class WebScraper:
             return parsed.netloc
         except Exception:
             return "unknown"
+    
+    def test_scraping(self, url: str) -> Dict[str, Any]:
+        """Test scraping functionality with detailed output.
+        
+        Args:
+            url: URL to test
+            
+        Returns:
+            Detailed scraping results
+        """
+        print(f"Testing web scraping for: {url}")
+        
+        result = self.extract_content(url)
+        
+        if result["success"]:
+            content = result["content"]
+            metadata = result["metadata"]
+            
+            print(f"✅ Successfully scraped {len(content)} characters")
+            print(f"Title: {metadata.get('title', 'No title')}")
+            print(f"Domain: {metadata.get('domain', 'Unknown')}")
+            print(f"Content preview: {content[:200]}...")
+            
+            return {
+                "success": True,
+                "content_length": len(content),
+                "title": metadata.get('title', ''),
+                "domain": metadata.get('domain', ''),
+                "preview": content[:500]
+            }
+        else:
+            print(f"❌ Failed to scrape: {result['error']}")
+            return {
+                "success": False,
+                "error": result["error"]
+            }

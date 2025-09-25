@@ -56,6 +56,16 @@ DOCUMENTS_PATH=./documents
 MAX_CONVERSATION_TOKENS=4000
 SUMMARIZATION_THRESHOLD=0.8
 ENABLE_CONVERSATION_MEMORY=true
+
+# Document Retrieval Settings
+RETRIEVAL_TOP_K=5
+RETRIEVAL_THRESHOLD=0.3
+ENABLE_RETRIEVAL_DEBUG=false
+
+# UI Settings
+USER_PROMPT=You
+GOODBYE_MESSAGE=Goodbye! Thanks for using RAG Sample.
+WELCOME_MESSAGE=Welcome to RAG Sample! Ask me anything about your documents.
 EOF
     echo "Sample .env file created. Please update with your actual Groq API key."
 fi
@@ -65,7 +75,7 @@ echo "Setup complete! To get started:"
 echo "1. Activate the virtual environment: source venv/bin/activate"
 echo "2. Update .env file with your Groq API key"
 echo "3. Add documents to the ./documents directory"
-echo "4. Run the application: python -m rag_sample.cli"
+echo "4. Install the package in development mode: pip install -e ."
+echo "5. Run the application: rag-sample"
 echo ""
-echo "Or install in development mode: pip install -e ."
-echo "Then run: rag-sample"
+echo "Alternative: python -m rag_sample.cli"

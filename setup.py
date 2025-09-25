@@ -3,8 +3,21 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+# Read requirements from requirements.txt
+def read_requirements():
+    """Read requirements from requirements.txt file."""
+    requirements = []
+    try:
+        with open("requirements.txt", "r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    requirements.append(line)
+    except FileNotFoundError:
+        raise FileNotFoundError("requirements.txt not found. Please ensure it exists in the project root.")
+    return requirements
+
+requirements = read_requirements()
 
 setup(
     name="rag-sample",

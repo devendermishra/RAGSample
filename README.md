@@ -20,13 +20,15 @@ A sample command line (CLI) based conversational RAG (Retrieval-Augmented Genera
 
 ### Installation
 
+#### **Quick Start (Recommended):**
+
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
    cd RAGSample
    ```
 
-2. **Set up the environment:**
+2. **Run the setup script:**
    ```bash
    ./setup_venv.sh
    ```
@@ -36,28 +38,52 @@ A sample command line (CLI) based conversational RAG (Retrieval-Augmented Genera
    source venv/bin/activate
    ```
 
-4. **Configure your API key:**
+4. **Install the package:**
+   ```bash
+   pip install -e .
+   ```
+
+5. **Configure your API key:**
    ```bash
    cp env.example .env
    # Edit .env and add your Groq API key
    ```
 
-5. **Add documents:**
-   ```bash
-   # Place your PDF, TXT, or MD files in the documents/ directory
-   mkdir -p documents
-   cp your-document.pdf documents/
-   ```
-
 6. **Run the application:**
    ```bash
-   # Option 1: Direct execution
-   python -m rag_sample.cli
-   
-   # Option 2: Install and use CLI command
-   pip install -e .
    rag-sample
    ```
+
+#### **Manual Installation:**
+
+If you encounter issues with the setup script:
+
+1. **Create virtual environment:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   pip install -e .
+   ```
+
+3. **Configure and run:**
+   ```bash
+   cp env.example .env
+   # Edit .env with your Groq API key
+   rag-sample
+   ```
+
+#### **Troubleshooting:**
+
+- **"externally-managed-environment" error:** Use virtual environment (see above)
+- **"command not found: pip":** Use `python3 -m pip` instead
+- **Permission errors:** Use virtual environment or `pip install --user`
+
+For detailed troubleshooting, see [INSTALL.md](INSTALL.md).
 
 ## Usage
 
@@ -93,6 +119,12 @@ The application can be configured through environment variables or a `.env` file
 - `MAX_CONVERSATION_TOKENS`: Maximum tokens for conversation memory (default: 4000)
 - `SUMMARIZATION_THRESHOLD`: When to summarize conversation (default: 0.8)
 - `ENABLE_CONVERSATION_MEMORY`: Enable conversation context (default: true)
+- `RETRIEVAL_TOP_K`: Number of documents to retrieve (default: 5)
+- `RETRIEVAL_THRESHOLD`: Similarity threshold for document retrieval (default: 0.3)
+- `ENABLE_RETRIEVAL_DEBUG`: Enable retrieval debugging (default: false)
+- `USER_PROMPT`: User input prompt text (default: "You")
+- `GOODBYE_MESSAGE`: Exit message (default: "Goodbye! Thanks for using RAG Sample.")
+- `WELCOME_MESSAGE`: Welcome message (default: "Welcome to RAG Sample! Ask me anything about your documents.")
 
 ## Available Groq Models
 
@@ -123,8 +155,17 @@ During a chat session, you can use these commands:
 - `/clear` or `/reset` - Clear the conversation memory
 - `/history` or `/messages` - Show recent conversation messages
 - `/add <file_path>` - Add a new document to the knowledge base
-- `/docs` or `/documents` - List documents in the documents directory
+- `/docs` or `/documents` - List documents in the documents directory and vector store
 - `/docstats` - Show document statistics from the vector database
+- `/remove <document_identifier>` - Remove a document from the knowledge base
+- `/listdocs` or `/list` - List all documents in the vector store
+- `/cmdhistory` or `/cmds` - Show command history (last 20 commands)
+- `/clearhistory` or `/clearhist` - Clear command history
+- `/retrieval` or `/retrievalconfig` - Show retrieval configuration
+- `/setretrieval <k> <threshold>` - Set retrieval parameters
+- `/debug` or `/toggledebug` - Toggle retrieval debug mode
+- `/ui` or `/uiconfig` - Show current UI configuration
+- `/setui <user_prompt>|<goodbye_message>` - Set UI messages
 
 ### Example Session with Memory
 
@@ -142,6 +183,134 @@ Conversation Stats:
   max_tokens: 4000
   has_summary: false
   token_usage_percentage: 30.0
+```
+
+## Command History & Navigation
+
+The CLI includes intelligent command history and navigation features:
+
+### **Arrow Key Navigation:**
+- **↑ (Up Arrow)** - Navigate to previous commands
+- **↓ (Down Arrow)** - Navigate to next commands
+- **Tab** - Auto-complete commands
+
+### **Command History Features:**
+- **Persistent History** - Commands are saved between sessions
+- **Smart Deduplication** - Avoids duplicate consecutive commands
+- **Tab Completion** - Auto-complete common commands
+- **History Management** - View and clear command history
+
+### **Example Navigation Session:**
+
+```
+You: /stats
+Conversation Stats:
+  total_messages: 4
+  current_tokens: 1200
+  max_tokens: 4000
+  token_usage_percentage: 30.0
+
+You: /cmdhistory
+Command History (last 20):
+   1. What is machine learning?
+   2. Can you explain the types?
+   3. /stats
+   4. /cmdhistory
+
+You: [Press ↑ to navigate to previous commands]
+You: What is machine learning? [Previous command appears]
+```
+
+### **History Commands:**
+- **`/cmdhistory`** or **`/cmds`** - Show last 20 commands
+- **`/clearhistory`** or **`/clearhist`** - Clear command history
+
+## UI Configuration
+
+The RAG system allows you to customize the user interface messages for a personalized experience.
+
+### UI Settings
+
+- **`USER_PROMPT`**: The text displayed before user input (default: "You")
+- **`GOODBYE_MESSAGE`**: Message shown when exiting the application
+- **`WELCOME_MESSAGE`**: Message shown when starting the application
+
+### UI Management Commands
+
+- **`/ui`** or **`/uiconfig`** - Show current UI configuration
+- **`/setui <user_prompt>|<goodbye_message>`** - Set UI messages
+
+### Example UI Configuration
+
+```bash
+# View current UI settings
+You: /ui
+UI Configuration:
+  User Prompt: 'You'
+  Goodbye Message: 'Goodbye! Thanks for using RAG Sample.'
+  Welcome Message: 'Welcome to RAG Sample! Ask me anything about your documents.'
+
+# Customize UI messages
+You: /setui 'User'|'See you later!'
+✅ UI settings updated:
+  User Prompt: 'User'
+  Goodbye Message: 'See you later!'
+```
+
+### Environment Configuration
+
+You can also set UI messages via environment variables:
+
+```bash
+# .env file
+USER_PROMPT=User
+GOODBYE_MESSAGE=See you later!
+WELCOME_MESSAGE=Welcome to the RAG Assistant!
+```
+
+## Document Management
+
+The application supports comprehensive document management including adding, listing, and removing documents from the knowledge base.
+
+### **Document Removal:**
+
+You can remove documents from the knowledge base using various identifiers:
+
+#### **Remove by Filename:**
+```bash
+You: /remove manual.pdf
+✅ Document 'manual.pdf' removed successfully!
+```
+
+#### **Remove by URL:**
+```bash
+You: /remove https://example.com/article
+✅ Document 'https://example.com/article' removed successfully!
+```
+
+#### **Remove by Partial Match:**
+```bash
+You: /remove readytensor
+✅ Document 'readytensor' removed successfully!
+```
+
+### **Document Listing:**
+
+Use `/listdocs` to see all documents in the vector store with detailed information:
+
+```
+You: /listdocs
+Documents in Vector Store:
+   1. RAG Pipeline Implementation
+      Source: https://app.readytensor.ai/publications/rag-pipeline-retrieval-augmented-generation-system-impl-using-langchain-chromadb-and-streamlit-cVoJzVn1gPOT
+      Type: web_page
+      Chunks: 15
+      Domain: app.readytensor.ai
+
+   2. Manual
+      Source: ./documents/manual.pdf
+      Type: pdf
+      Chunks: 8
 ```
 
 ## Document Management
@@ -194,6 +363,8 @@ success = rag_engine.add_document_from_url("https://example.com/article")
 - **`@<url>`** - Add web content from a URL
 - **`/docs`** - List all documents in the documents directory
 - **`/docstats`** - Show vector database statistics
+- **`/remove <document_identifier>`** - Remove a document from the knowledge base
+- **`/listdocs`** - List all documents in the vector store
 
 ### **Example Document Session:**
 
@@ -204,6 +375,19 @@ Found 3 supported documents:
   📄 manual.pdf (2,456,789 bytes)
   📄 notes.txt (15,234 bytes)
   📄 README.md (8,456 bytes)
+
+Documents in Vector Store:
+Found 4 documents in vector store:
+   1. 🌐 RAG Pipeline Implementation
+      Source: https://app.readytensor.ai/publications/rag-pipeline-retrieval-augmented-generation-system-impl-using-langchain-chromadb-and-streamlit-cVoJzVn1gPOT
+      Type: web_page
+      Chunks: 15
+      Domain: app.readytensor.ai
+
+   2. 📄 Manual
+      Source: ./documents/manual.pdf
+      Type: pdf
+      Chunks: 8
 
 You: /add new-document.pdf
 Adding document: new-document.pdf...
@@ -220,6 +404,32 @@ Document Statistics:
   documents_path: ./documents
   chunk_size: 1000
   chunk_overlap: 200
+
+You: /listdocs
+Documents in Vector Store:
+   1. RAG Pipeline Implementation
+      Source: https://app.readytensor.ai/publications/rag-pipeline-retrieval-augmented-generation-system-impl-using-langchain-chromadb-and-streamlit-cVoJzVn1gPOT
+      Type: web_page
+      Chunks: 15
+      Domain: app.readytensor.ai
+
+   2. Manual
+      Source: ./documents/manual.pdf
+      Type: pdf
+      Chunks: 8
+
+You: /remove manual.pdf
+Removing document: manual.pdf...
+Successfully removed 8 document chunks matching 'manual.pdf'
+✅ Document 'manual.pdf' removed successfully!
+
+You: /listdocs
+Documents in Vector Store:
+   1. RAG Pipeline Implementation
+      Source: https://app.readytensor.ai/publications/rag-pipeline-retrieval-augmented-generation-system-impl-using-langchain-chromadb-and-streamlit-cVoJzVn1gPOT
+      Type: web_page
+      Chunks: 15
+      Domain: app.readytensor.ai
 ```
 
 ## Development

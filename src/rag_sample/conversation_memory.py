@@ -33,15 +33,17 @@ class Message:
 class ConversationMemory:
     """Manages conversation history with token tracking and summarization."""
     
-    def __init__(self, max_tokens: int = 4000, summarization_threshold: float = 0.8):
+    def __init__(self, max_tokens: int = 4000, summarization_threshold: float = 0.8, llm=None):
         """Initialize conversation memory.
         
         Args:
             max_tokens: Maximum tokens to maintain in conversation
             summarization_threshold: When to trigger summarization (0.0-1.0)
+            llm: Language model for summarization
         """
         self.max_tokens = max_tokens
         self.summarization_threshold = summarization_threshold
+        self.llm = llm
         self.messages: List[Message] = []
         self.summary: str = ""
         self.current_tokens = 0
@@ -72,24 +74,31 @@ class ConversationMemory:
         return self.current_tokens > threshold_tokens
     
     def _summarize_conversation(self) -> None:
-        """Summarize the conversation to reduce token count."""
+        """Summarize the conversation using Ready Tensor advanced techniques."""
         if len(self.messages) < 2:
             return
         
         # Create summary of older messages
         older_messages = self.messages[:-2]  # Keep last 2 messages
         if older_messages:
-            # Create a simple summary
-            user_messages = [msg.content for msg in older_messages if msg.role == 'user']
-            assistant_messages = [msg.content for msg in older_messages if msg.role == 'assistant']
-            
-            summary_parts = []
-            if user_messages:
-                summary_parts.append(f"User asked about: {'; '.join(user_messages[:3])}")
-            if assistant_messages:
-                summary_parts.append(f"Assistant provided information about: {'; '.join(assistant_messages[:3])}")
-            
-            self.summary = "Previous conversation: " + ". ".join(summary_parts)
+            if self.llm:
+                # Use Ready Tensor's advanced summarization approach
+                conversation_text = self._format_conversation_for_summary(older_messages)
+                summary_prompt = self._create_summarization_prompt(conversation_text)
+                
+                try:
+                    # Use the same system prompt as the main RAG system
+                    response = self.llm.invoke(summary_prompt)
+                    if hasattr(response, 'content'):
+                        self.summary = f"Previous conversation: {response.content}"
+                    else:
+                        self.summary = f"Previous conversation: {str(response)}"
+                except Exception as e:
+                    # Fallback to simple summary if LLM fails
+                    self._create_simple_summary(older_messages)
+            else:
+                # Fallback to simple summary if no LLM provided
+                self._create_simple_summary(older_messages)
             
             # Remove older messages and update token count
             removed_tokens = sum(msg.tokens for msg in older_messages)
@@ -99,6 +108,48 @@ class ConversationMemory:
             # Add summary tokens
             summary_tokens = self._count_tokens(self.summary)
             self.current_tokens += summary_tokens
+    
+    def _format_conversation_for_summary(self, messages: List[Message]) -> str:
+        """Format conversation for summarization using Ready Tensor techniques."""
+        formatted_messages = []
+        for msg in messages:
+            timestamp = msg.timestamp.strftime("%H:%M:%S")
+            formatted_messages.append(f"[{timestamp}] {msg.role.upper()}: {msg.content}")
+        return "\n".join(formatted_messages)
+    
+    def _create_summarization_prompt(self, conversation_text: str) -> str:
+        """Create advanced summarization prompt using Ready Tensor techniques."""
+        return f"""You are a conversation summarizer. Your task is to create a concise summary that preserves:
+
+1. Key topics discussed
+2. Important decisions made
+3. Critical information shared
+4. User preferences or requirements
+5. Context needed for future interactions
+
+Conversation to summarize:
+{conversation_text}
+
+Create a summary that:
+- Preserves essential context for future responses
+- Maintains user intent and preferences
+- Captures key technical details
+- Is concise but comprehensive
+
+Summary:"""
+    
+    def _create_simple_summary(self, older_messages: List[Message]) -> None:
+        """Create a simple summary as fallback."""
+        user_messages = [msg.content for msg in older_messages if msg.role == 'user']
+        assistant_messages = [msg.content for msg in older_messages if msg.role == 'assistant']
+        
+        summary_parts = []
+        if user_messages:
+            summary_parts.append(f"User asked about: {'; '.join(user_messages[:3])}")
+        if assistant_messages:
+            summary_parts.append(f"Assistant provided information about: {'; '.join(assistant_messages[:3])}")
+        
+        self.summary = "Previous conversation: " + ". ".join(summary_parts)
     
     def _count_tokens(self, text: str) -> int:
         """Count tokens in text."""

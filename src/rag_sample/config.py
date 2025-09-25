@@ -29,9 +29,10 @@ class Config:
         self.groq_model = os.getenv("GROQ_MODEL", "llama3-8b-8192")
         self.temperature = float(os.getenv("TEMPERATURE", "0.7"))
         self.max_tokens = int(os.getenv("MAX_TOKENS", "1000"))
+        self.vector_db_collection = os.getenv("VECTOR_DB_COLLECTION", "rag_sample_collection")
         
         # Vector database settings
-        self.vector_db_path = os.getenv("VECTOR_DB_PATH", "./data/vector_db")
+        self.vector_db_path = os.getenv("VECTOR_DB_PATH", "./data/_vector_db_old")
         self.chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))
         self.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "200"))
         
@@ -42,6 +43,16 @@ class Config:
         self.max_conversation_tokens = int(os.getenv("MAX_CONVERSATION_TOKENS", "4000"))
         self.summarization_threshold = float(os.getenv("SUMMARIZATION_THRESHOLD", "0.8"))
         self.enable_conversation_memory = os.getenv("ENABLE_CONVERSATION_MEMORY", "true").lower() == "true"
+        
+        # Document retrieval settings
+        self.retrieval_top_k = int(os.getenv("RETRIEVAL_TOP_K", "5"))
+        self.retrieval_threshold = float(os.getenv("RETRIEVAL_THRESHOLD", "0.3"))
+        self.enable_retrieval_debug = os.getenv("ENABLE_RETRIEVAL_DEBUG", "false").lower() == "true"
+        
+        # UI settings
+        self.user_prompt = os.getenv("USER_PROMPT", "You")
+        self.goodbye_message = os.getenv("GOODBYE_MESSAGE", "Goodbye! Thanks for using RAG Sample.")
+        self.welcome_message = os.getenv("WELCOME_MESSAGE", "Welcome to RAG Sample! Ask me anything about your documents.")
         
         # Validate required settings
         self._validate()
@@ -67,4 +78,10 @@ class Config:
             "max_conversation_tokens": self.max_conversation_tokens,
             "summarization_threshold": self.summarization_threshold,
             "enable_conversation_memory": self.enable_conversation_memory,
+            "retrieval_top_k": self.retrieval_top_k,
+            "retrieval_threshold": self.retrieval_threshold,
+            "enable_retrieval_debug": self.enable_retrieval_debug,
+            "user_prompt": self.user_prompt,
+            "goodbye_message": self.goodbye_message,
+            "welcome_message": self.welcome_message,
         }
