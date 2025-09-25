@@ -16,6 +16,10 @@ from .conversation_memory import ConversationMemory
 from .prompt_builder import PromptManager
 from .document_manager import DocumentManager
 from .retrieval_engine import RetrievalEngine
+from .logging_config import get_logger
+from .exceptions import RAGSampleError, LLMError, RetrievalError
+
+logger = get_logger(__name__)
 
 
 class RAGEngine:
@@ -108,6 +112,8 @@ class RAGEngine:
         Returns:
             System's response
         """
+        logger.info(f"Processing question: {question[:100]}...")
+        
         try:
             # Add user question to conversation memory
             if self.conversation_memory:

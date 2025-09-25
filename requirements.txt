@@ -1,23 +1,37 @@
-# Core dependencies for RAG application
-groq>=0.4.0
-langchain>=0.1.0
-langchain-groq>=0.1.0
-langchain-community>=0.0.20
-chromadb>=0.4.0
-sentence-transformers>=2.2.0
-pypdf>=3.0.0
-python-dotenv>=1.0.0
-click>=8.0.0
-rich>=13.0.0
-tiktoken>=0.5.0
+# Copyright (c) 2024 Devender Mishra. All rights reserved.
+# Core dependencies for RAG application (pinned versions)
+groq==0.31.1
+langchain==0.3.27
+langchain-groq==0.3.8
+langchain-community==0.3.29
+langchain-huggingface==0.3.1
+chromadb==1.1.0
+sentence-transformers==5.1.0
+pypdf==6.0.0
+python-dotenv==1.1.1
+click==8.3.0
+rich==14.1.0
+tiktoken==0.11.0
 
-# Web scraping dependencies
-requests>=2.31.0
-beautifulsoup4>=4.12.0
-lxml>=4.9.0
-PyYAML>=6.0
-# Development dependencies
-pytest>=7.0.0
-black>=23.0.0
-flake8>=6.0.0
-mypy>=1.0.0
+# Web scraping dependencies (pinned versions)
+requests==2.32.5
+beautifulsoup4==4.13.5
+lxml==6.0.2
+PyYAML==6.0.2
+
+# GPU acceleration dependencies (optional, pinned versions)
+torch==2.5.1  # PyTorch for GPU acceleration
+accelerate==1.1.1  # HuggingFace accelerate for GPU optimization
+bitsandbytes==0.44.0  # 8-bit quantization for GPU memory optimization
+
+# CUDA support (install with: pip install torch --index-url https://download.pytorch.org/whl/cu118)
+# torch-audio==2.5.1
+# torch-vision==0.20.1
+
+# Development dependencies (pinned versions)
+pytest==8.4.2
+pytest-cov==7.0.0
+pytest-mock==3.15.1
+black==24.10.0
+flake8==7.1.1
+mypy==1.13.0

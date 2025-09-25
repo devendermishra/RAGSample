@@ -7,12 +7,13 @@ import tempfile
 from pathlib import Path
 import pytest
 from src.rag_sample.config import Config
+from src.rag_sample.exceptions import ConfigurationError
 
 
 class TestConfig:
     """Test configuration functionality."""
     
-    def test_config_initialization(self):
+    def test_config_initialization(self) -> None:
         """Test basic config initialization."""
         config = Config()
         assert config.groq_model is not None
@@ -21,7 +22,7 @@ class TestConfig:
         assert config.vector_db_path == "./data/vector_db"
         assert config.documents_path == "./documents"
     
-    def test_config_with_env_file(self):
+    def test_config_with_env_file(self) -> None:
         """Test config loading from environment file."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
             f.write("GROQ_MODEL=test-model\n")
@@ -36,25 +37,24 @@ class TestConfig:
             
             os.unlink(f.name)
     
-    def test_config_validation(self):
+    def test_config_validation(self) -> None:
         """Test config validation."""
-        config = Config()
-        
         # Test with missing API key
         original_key = os.environ.get("GROQ_API_KEY")
         if "GROQ_API_KEY" in os.environ:
             del os.environ["GROQ_API_KEY"]
         
         try:
-            config._validate()
-            # Should not raise exception as we have a key in the test
-        except ValueError as e:
-            assert "GROQ_API_KEY" in str(e)
+            config = Config()
+            assert False, "Should have raised ConfigurationError"
+        except ConfigurationError as e:
+            assert "GROQ_API_KEY is required" in str(e.message)
+            assert e.error_code == "MISSING_API_KEY"
         finally:
             if original_key:
                 os.environ["GROQ_API_KEY"] = original_key
     
-    def test_config_to_dict(self):
+    def test_config_to_dict(self) -> None:
         """Test config to dictionary conversion."""
         config = Config()
         config_dict = config.to_dict()

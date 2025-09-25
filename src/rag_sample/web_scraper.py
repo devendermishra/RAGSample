@@ -8,6 +8,11 @@ from urllib.parse import urlparse
 from typing import Dict, Any
 import re
 
+from .logging_config import get_logger
+from .exceptions import WebScrapingError
+
+logger = get_logger(__name__)
+
 
 class WebScraper:
     """Web scraper for extracting text content from URLs."""

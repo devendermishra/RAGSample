@@ -7,6 +7,10 @@ from langchain.schema import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from .config import Config
+from .logging_config import get_logger
+from .exceptions import RetrievalError
+
+logger = get_logger(__name__)
 
 
 class RetrievalEngine:

@@ -3,9 +3,14 @@ Configuration management for RAG Sample application.
 """
 
 import os
+import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
+from .logging_config import get_logger
+from .exceptions import ConfigurationError
+
+logger = get_logger(__name__)
 
 
 class Config:
@@ -59,11 +64,17 @@ class Config:
     
     def _validate(self):
         """Validate configuration settings."""
+        logger.info("Validating configuration settings")
+        
         if not self.groq_api_key:
-            raise ValueError(
+            error_msg = (
                 "GROQ_API_KEY is required. Please set it in your environment "
                 "or create a .env file with GROQ_API_KEY=your_key_here"
             )
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg, "MISSING_API_KEY")
+        
+        logger.info("Configuration validation successful")
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary."""

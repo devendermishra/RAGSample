@@ -15,6 +15,10 @@ from chromadb.config import Settings
 
 from .config import Config
 from .web_scraper import WebScraper
+from .logging_config import get_logger
+from .exceptions import DocumentError, VectorStoreError
+
+logger = get_logger(__name__)
 
 
 class DocumentManager:

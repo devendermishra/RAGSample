@@ -5,6 +5,11 @@ Conversation memory system for maintaining chat context and handling token limit
 import tiktoken
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+
+from .logging_config import get_logger
+from .exceptions import ConversationMemoryError
+
+logger = get_logger(__name__)
 from datetime import datetime
 
 

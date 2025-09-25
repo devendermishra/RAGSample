@@ -12,6 +12,10 @@ import readline
 import atexit
 
 from .rag_engine import RAGEngine
+from .logging_config import get_logger
+from .exceptions import RAGSampleError
+
+logger = get_logger(__name__)
 from .config import Config
 
 console = Console()
