@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+data/vector_db/
+logs/
+*.log
+
+# Documentation
+README.md
+INSTALL.md
+GPU_REQUIREMENTS.md
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Development
+.env.example
+setup_venv.sh
