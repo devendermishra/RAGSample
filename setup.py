@@ -1,12 +1,20 @@
 from setuptools import setup, find_packages
+from typing import List
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 # Read requirements from requirements.txt
-def read_requirements():
-    """Read requirements from requirements.txt file."""
-    requirements = []
+def read_requirements() -> List[str]:
+    """Read requirements from requirements.txt file.
+    
+    Returns:
+        List of requirement strings
+        
+    Raises:
+        FileNotFoundError: If requirements.txt file is not found
+    """
+    requirements: List[str] = []
     try:
         with open("requirements.txt", "r", encoding="utf-8") as fh:
             for line in fh:
@@ -27,7 +35,7 @@ setup(
     description="A sample command line (CLI) based conversational RAG app",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/RAGSample",
+    url="https://github.com/devendermishra/RAGSample",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     classifiers=[

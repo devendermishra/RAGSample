@@ -22,7 +22,7 @@ PyYAML==6.0.2
 # GPU acceleration dependencies (optional, pinned versions)
 torch==2.5.1  # PyTorch for GPU acceleration
 accelerate==1.1.1  # HuggingFace accelerate for GPU optimization
-bitsandbytes==0.44.0  # 8-bit quantization for GPU memory optimization
+bitsandbytes==0.42.0  # 8-bit quantization for GPU memory optimization
 
 # CUDA support (install with: pip install torch --index-url https://download.pytorch.org/whl/cu118)
 # torch-audio==2.5.1

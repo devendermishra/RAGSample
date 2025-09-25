@@ -3,13 +3,11 @@ RAG Engine implementation for document chat functionality.
 """
 
 import os
-from pathlib import Path
 from typing import List, Optional, Dict, Any
 import chromadb
 from chromadb.config import Settings
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.schema import Document
 
 from .config import Config
 from .conversation_memory import ConversationMemory
@@ -17,7 +15,6 @@ from .prompt_builder import PromptManager
 from .document_manager import DocumentManager
 from .retrieval_engine import RetrievalEngine
 from .logging_config import get_logger
-from .exceptions import RAGSampleError, LLMError, RetrievalError
 
 logger = get_logger(__name__)
 
