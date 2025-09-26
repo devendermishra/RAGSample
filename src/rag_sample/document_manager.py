@@ -2,21 +2,17 @@
 Document management functionality for RAG system.
 """
 
-import os
 import hashlib
 import time
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-import chromadb
-from chromadb.config import Settings
 
 from .config import Config
 from .web_scraper import WebScraper
 from .logging_config import get_logger
-from .exceptions import DocumentError, VectorStoreError
 
 logger = get_logger(__name__)
 

@@ -15,45 +15,6 @@ A sample command line (CLI) based conversational RAG (Retrieval-Augmented Genera
 - 🚀 GPU acceleration support
 - 📦 Multiple environment management options
 
-## Project Structure
-
-```
-RAGSample/
-├── src/rag_sample/           # Main application code
-│   ├── __init__.py          # Package initialization
-│   ├── cli.py               # Command-line interface
-│   ├── config.py            # Configuration management
-│   ├── rag_engine.py        # Core RAG functionality
-│   ├── document_manager.py  # Document processing and management
-│   ├── retrieval_engine.py  # Vector similarity search
-│   ├── conversation_memory.py # Chat history and summarization
-│   ├── web_scraper.py       # URL content extraction
-│   └── prompt_builder.py    # YAML-based prompt management
-├── tests/                   # Test suite
-│   ├── test_config.py       # Configuration tests
-│   ├── test_document_manager.py # Document management tests
-│   └── test_web_scraper.py  # Web scraping tests
-├── config/                  # Configuration files
-│   └── prompts.yaml        # Prompt templates
-├── documents/               # Document storage directory
-├── data/                    # Data storage
-│   └── vector_db/          # ChromaDB vector database
-├── logs/                    # Application logs
-├── requirements.txt         # Python dependencies
-├── requirements.lock        # Exact dependency versions
-├── environment.yml         # Conda environment specification
-├── Pipfile                 # Pipenv configuration
-├── Dockerfile              # Docker containerization
-├── docker-compose.yml      # Docker Compose configuration
-├── setup.py                # Package installation
-├── setup_venv.sh          # Virtual environment setup
-├── .env.example            # Environment variables template
-├── GPU_REQUIREMENTS.md     # GPU acceleration documentation
-├── CODE_OF_CONDUCT.md      # Community guidelines
-├── CHANGELOG.md            # Version history
-└── README.md               # This file
-```
-
 ### Directory Purposes
 
 - **`src/rag_sample/`**: Core application modules with clear separation of concerns
@@ -489,7 +450,7 @@ Documents in Vector Store:
 For questions, issues, or contributions, please contact:
 
 - **Maintainer**: Devender Mishra
-- **Email**: devender.mishra@example.com
+- **Email**: devendermishra@hotmail.com
 - **GitHub**: [@devendermishra](https://github.com/devendermishra)
 - **Issues**: [GitHub Issues](https://github.com/devendermishra/RAGSample/issues)
 

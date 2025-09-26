@@ -245,3 +245,80 @@ Answer:"""
             "summarization_threshold": self.conversation_memory.summarization_threshold,
             "memory_enabled": self.config.enable_conversation_memory
         }
+    
+    def clear_conversation(self):
+        """Clear the conversation memory."""
+        if self.conversation_memory:
+            self.conversation_memory.messages = []
+            self.conversation_memory.current_tokens = 0
+            logger.info("Conversation memory cleared")
+    
+    def get_recent_messages(self, count: int = 10) -> List[Dict[str, Any]]:
+        """Get recent messages from conversation memory.
+        
+        Args:
+            count: Number of recent messages to return
+            
+        Returns:
+            List of recent messages
+        """
+        if not self.conversation_memory:
+            return []
+        
+        recent_messages = self.conversation_memory.messages[-count:]
+        return [
+            {
+                "role": msg.role,
+                "content": msg.content,
+                "timestamp": msg.timestamp.isoformat() if hasattr(msg.timestamp, 'isoformat') else str(msg.timestamp)
+            }
+            for msg in recent_messages
+        ]
+    
+    def test_url(self, url: str) -> str:
+        """Test if a URL can be scraped and processed."""
+        return self.document_manager.test_url(url)
+    
+    def get_retrieval_settings(self) -> Dict[str, Any]:
+        """Get current retrieval settings.
+        
+        Returns:
+            Dictionary with retrieval settings
+        """
+        return {
+            "top_k": self.config.retrieval_top_k,
+            "threshold": self.config.retrieval_threshold,
+            "debug": self.config.enable_retrieval_debug
+        }
+    
+    def set_retrieval_settings(self, top_k: int, threshold: float):
+        """Set retrieval settings.
+        
+        Args:
+            top_k: Number of documents to retrieve
+            threshold: Similarity threshold for filtering
+        """
+        self.config.retrieval_top_k = top_k
+        self.config.retrieval_threshold = threshold
+        logger.info(f"Retrieval settings updated: top_k={top_k}, threshold={threshold}")
+    
+    def toggle_debug(self):
+        """Toggle debug mode for retrieval."""
+        self.config.enable_retrieval_debug = not self.config.enable_retrieval_debug
+        logger.info(f"Debug mode toggled: {self.config.enable_retrieval_debug}")
+    
+    def set_ui_settings(self, user_prompt: str, goodbye_message: str):
+        """Set UI settings.
+        
+        Args:
+            user_prompt: User prompt text
+            goodbye_message: Goodbye message text
+        """
+        self.config.user_prompt = user_prompt
+        self.config.goodbye_message = goodbye_message
+        logger.info("UI settings updated")
+    
+    @property
+    def debug_enabled(self) -> bool:
+        """Check if debug mode is enabled."""
+        return self.config.enable_retrieval_debug

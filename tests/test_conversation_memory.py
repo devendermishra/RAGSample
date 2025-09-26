@@ -126,7 +126,7 @@ class TestConversationMemory:
         self.memory.add_message("user", "Hello")
         self.memory.add_message("assistant", "Hi there!")
         
-        formatted = self.memory._format_conversation_for_summary()
+        formatted = _format_conversation_for_summary()
         assert "User: Hello" in formatted
         assert "Assistant: Hi there!" in formatted
     
@@ -134,7 +134,7 @@ class TestConversationMemory:
         """Test creating summarization prompt."""
         conversation = "User: Hello\nAssistant: Hi there!"
         
-        prompt = self.memory._create_summarization_prompt(conversation)
+        prompt = _create_summarization_prompt(conversation)
         assert "Summarize the following conversation" in prompt
         assert "User: Hello" in prompt
         assert "Assistant: Hi there!" in prompt

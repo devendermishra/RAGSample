@@ -8,9 +8,26 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 from .config import Config
 from .logging_config import get_logger
-from .exceptions import RetrievalError
 
 logger = get_logger(__name__)
+
+
+def _is_content_relevant(doc: Document, question: str) -> bool:
+    """Check if document content is relevant to the question using Ready Tensor techniques."""
+    # Basic relevance checks
+    question_lower = question.lower()
+    content_lower = doc.page_content.lower()
+
+    # Check for key terms overlap
+    question_terms = set(question_lower.split())
+    content_terms = set(content_lower.split())
+
+    # Calculate basic relevance score
+    overlap = len(question_terms.intersection(content_terms))
+    relevance_score = overlap / len(question_terms) if question_terms else 0
+
+    # Apply minimum relevance threshold
+    return relevance_score >= 0.1  # 10% term overlap minimum
 
 
 class RetrievalEngine:
@@ -75,25 +92,8 @@ class RetrievalEngine:
             # Apply similarity threshold
             if score <= self.config.retrieval_threshold:
                 # Apply Ready Tensor's content relevance check
-                if self._is_content_relevant(doc, question):
+                if _is_content_relevant(doc, question):
                     filtered_docs.append(doc)
         
         # Limit to top_k results
         return filtered_docs[:self.config.retrieval_top_k]
-    
-    def _is_content_relevant(self, doc: Document, question: str) -> bool:
-        """Check if document content is relevant to the question using Ready Tensor techniques."""
-        # Basic relevance checks
-        question_lower = question.lower()
-        content_lower = doc.page_content.lower()
-        
-        # Check for key terms overlap
-        question_terms = set(question_lower.split())
-        content_terms = set(content_lower.split())
-        
-        # Calculate basic relevance score
-        overlap = len(question_terms.intersection(content_terms))
-        relevance_score = overlap / len(question_terms) if question_terms else 0
-        
-        # Apply minimum relevance threshold
-        return relevance_score >= 0.1  # 10% term overlap minimum

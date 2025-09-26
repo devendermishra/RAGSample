@@ -3,11 +3,10 @@ Conversation memory system for maintaining chat context and handling token limit
 """
 
 import tiktoken
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from dataclasses import dataclass
 
 from .logging_config import get_logger
-from .exceptions import ConversationMemoryError
 
 logger = get_logger(__name__)
 from datetime import datetime
@@ -33,6 +32,46 @@ class Message:
         except Exception:
             # Fallback: rough estimation (4 chars per token)
             return len(text) // 4
+
+
+def _create_summarization_prompt(conversation_text: str) -> str:
+    """Create advanced summarization prompt using Ready Tensor techniques."""
+    return f"""You are a conversation summarizer. Your task is to create a concise summary that preserves:
+
+1. Key topics discussed
+2. Important decisions made
+3. Critical information shared
+4. User preferences or requirements
+5. Context needed for future interactions
+
+Conversation to summarize:
+{conversation_text}
+
+Create a summary that:
+- Preserves essential context for future responses
+- Maintains user intent and preferences
+- Captures key technical details
+- Is concise but comprehensive
+
+Summary:"""
+
+
+def _format_conversation_for_summary(messages: List[Message]) -> str:
+    """Format conversation for summarization using Ready Tensor techniques."""
+    formatted_messages = []
+    for msg in messages:
+        timestamp = msg.timestamp.strftime("%H:%M:%S")
+        formatted_messages.append(f"[{timestamp}] {msg.role.upper()}: {msg.content}")
+    return "\n".join(formatted_messages)
+
+
+def _count_tokens(text: str) -> int:
+    """Count tokens in text."""
+    try:
+        encoding = tiktoken.get_encoding("cl100k_base")
+        return len(encoding.encode(text))
+    except Exception:
+        return len(text) // 4
 
 
 class ConversationMemory:
@@ -88,8 +127,8 @@ class ConversationMemory:
         if older_messages:
             if self.llm:
                 # Use Ready Tensor's advanced summarization approach
-                conversation_text = self._format_conversation_for_summary(older_messages)
-                summary_prompt = self._create_summarization_prompt(conversation_text)
+                conversation_text = _format_conversation_for_summary(older_messages)
+                summary_prompt = _create_summarization_prompt(conversation_text)
                 
                 try:
                     # Use the same system prompt as the main RAG system
@@ -111,38 +150,9 @@ class ConversationMemory:
             self.current_tokens -= removed_tokens
             
             # Add summary tokens
-            summary_tokens = self._count_tokens(self.summary)
+            summary_tokens = _count_tokens(self.summary)
             self.current_tokens += summary_tokens
-    
-    def _format_conversation_for_summary(self, messages: List[Message]) -> str:
-        """Format conversation for summarization using Ready Tensor techniques."""
-        formatted_messages = []
-        for msg in messages:
-            timestamp = msg.timestamp.strftime("%H:%M:%S")
-            formatted_messages.append(f"[{timestamp}] {msg.role.upper()}: {msg.content}")
-        return "\n".join(formatted_messages)
-    
-    def _create_summarization_prompt(self, conversation_text: str) -> str:
-        """Create advanced summarization prompt using Ready Tensor techniques."""
-        return f"""You are a conversation summarizer. Your task is to create a concise summary that preserves:
 
-1. Key topics discussed
-2. Important decisions made
-3. Critical information shared
-4. User preferences or requirements
-5. Context needed for future interactions
-
-Conversation to summarize:
-{conversation_text}
-
-Create a summary that:
-- Preserves essential context for future responses
-- Maintains user intent and preferences
-- Captures key technical details
-- Is concise but comprehensive
-
-Summary:"""
-    
     def _create_simple_summary(self, older_messages: List[Message]) -> None:
         """Create a simple summary as fallback."""
         user_messages = [msg.content for msg in older_messages if msg.role == 'user']
@@ -155,15 +165,7 @@ Summary:"""
             summary_parts.append(f"Assistant provided information about: {'; '.join(assistant_messages[:3])}")
         
         self.summary = "Previous conversation: " + ". ".join(summary_parts)
-    
-    def _count_tokens(self, text: str) -> int:
-        """Count tokens in text."""
-        try:
-            encoding = tiktoken.get_encoding("cl100k_base")
-            return len(encoding.encode(text))
-        except Exception:
-            return len(text) // 4
-    
+
     def get_conversation_context(self) -> str:
         """Get the current conversation context for the LLM."""
         context_parts = []

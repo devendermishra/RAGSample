@@ -3,7 +3,6 @@ Configuration management for RAG Sample application.
 """
 
 import os
-import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv

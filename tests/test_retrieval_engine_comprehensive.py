@@ -122,7 +122,7 @@ class TestRetrievalEngineComprehensive:
         relevant_doc.page_content = "This document is about artificial intelligence and machine learning"
         relevant_doc.metadata = {"title": "AI and ML Guide"}
         
-        result = self.retrieval_engine._is_content_relevant(relevant_doc, "artificial intelligence")
+        result = _is_content_relevant(relevant_doc, "artificial intelligence")
         assert result is True
         
         # Test irrelevant content
@@ -130,7 +130,7 @@ class TestRetrievalEngineComprehensive:
         irrelevant_doc.page_content = "This document is about cooking recipes and food preparation"
         irrelevant_doc.metadata = {"title": "Cooking Guide"}
         
-        result = self.retrieval_engine._is_content_relevant(irrelevant_doc, "artificial intelligence")
+        result = _is_content_relevant(irrelevant_doc, "artificial intelligence")
         assert result is False
     
     def test_is_content_relevant_with_title(self) -> None:
@@ -140,7 +140,7 @@ class TestRetrievalEngineComprehensive:
         relevant_doc.page_content = "Short content"
         relevant_doc.metadata = {"title": "Artificial Intelligence Guide"}
         
-        result = self.retrieval_engine._is_content_relevant(relevant_doc, "artificial intelligence")
+        result = _is_content_relevant(relevant_doc, "artificial intelligence")
         assert result is True
         
         # Test irrelevant title
@@ -148,7 +148,7 @@ class TestRetrievalEngineComprehensive:
         irrelevant_doc.page_content = "Short content"
         irrelevant_doc.metadata = {"title": "Cooking Recipes"}
         
-        result = self.retrieval_engine._is_content_relevant(irrelevant_doc, "artificial intelligence")
+        result = _is_content_relevant(irrelevant_doc, "artificial intelligence")
         assert result is False
     
     def test_is_content_relevant_empty_content(self) -> None:
@@ -157,7 +157,7 @@ class TestRetrievalEngineComprehensive:
         empty_doc.page_content = ""
         empty_doc.metadata = {}
         
-        result = self.retrieval_engine._is_content_relevant(empty_doc, "test query")
+        result = _is_content_relevant(empty_doc, "test query")
         assert result is False
     
     def test_is_content_relevant_none_metadata(self) -> None:
@@ -166,7 +166,7 @@ class TestRetrievalEngineComprehensive:
         doc.page_content = "Test content"
         doc.metadata = None
         
-        result = self.retrieval_engine._is_content_relevant(doc, "test query")
+        result = _is_content_relevant(doc, "test query")
         assert result is True  # Should still work with None metadata
     
     def test_retrieve_documents_with_custom_k(self) -> None:

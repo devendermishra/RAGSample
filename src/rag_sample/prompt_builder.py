@@ -5,7 +5,6 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 
 from .logging_config import get_logger
-from .exceptions import PromptError
 
 logger = get_logger(__name__)
 

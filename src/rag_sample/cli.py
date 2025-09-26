@@ -9,11 +9,9 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.panel import Panel
 import readline
-import atexit
 
 from .rag_engine import RAGEngine
 from .logging_config import get_logger
-from .exceptions import RAGSampleError
 
 logger = get_logger(__name__)
 from .config import Config
@@ -84,7 +82,7 @@ class CommandHistory:
 class CLIHandler:
     """Handles CLI operations and command processing."""
     
-    def __init__(self, rag_engine, command_history, config_obj):
+    def __init__(self, rag_engine: RAGEngine, command_history, config_obj):
         """Initialize CLI handler.
         
         Args:
