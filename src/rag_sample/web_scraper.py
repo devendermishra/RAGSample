@@ -193,17 +193,20 @@ class WebScraper:
         
         return metadata
     
-    def _extract_text_content(self, soup: BeautifulSoup) -> str:
+    def _extract_text_content(self, html_content: str) -> str:
         """Extract main text content from the page.
         
         Args:
-            soup: BeautifulSoup object
+            html_content: HTML content as string
             
         Returns:
             Extracted text content
         """
+        # Parse HTML content
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
         # Remove unwanted elements
-        for element in soup(["script", "style", "nav", "footer", "header", "aside", "noscript"]):
+        for element in soup.find_all(["script", "style", "nav", "footer", "header", "aside", "noscript"]):
             element.decompose()
         
         # Try to find main content area with multiple strategies
@@ -338,7 +341,10 @@ class WebScraper:
         """
         try:
             parsed = urlparse(url)
-            return parsed.netloc
+            if parsed.netloc:
+                return parsed.netloc
+            else:
+                return "unknown"
         except Exception:
             return "unknown"
     
@@ -357,7 +363,7 @@ class WebScraper:
         
         if result["success"]:
             content = result["content"]
-            metadata = result["metadata"]
+            metadata = result.get("metadata", {})
             
             print(f"✅ Successfully scraped {len(content)} characters")
             print(f"Title: {metadata.get('title', 'No title')}")

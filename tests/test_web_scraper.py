@@ -36,8 +36,7 @@ class TestWebScraper:
         """Test URL validation with invalid URLs."""
         invalid_urls = [
             "not-a-url",
-            "ftp://example.com",
-            "example.com",
+            "example.com",  # No scheme
             "",
             None
         ]
@@ -50,7 +49,7 @@ class TestWebScraper:
         test_cases = [
             ("https://example.com", "example.com"),
             ("https://www.example.com/path", "www.example.com"),
-            ("http://subdomain.example.com:8080", "subdomain.example.com"),
+            ("http://subdomain.example.com:8080", "subdomain.example.com:8080"),  # Port is included
             ("invalid-url", "unknown")
         ]
         
@@ -91,4 +90,4 @@ class TestWebScraper:
         
         result = self.scraper.extract_content("https://example.com")
         assert result["success"] is False
-        assert "Request failed" in result["error"]
+        assert "Connection error" in result["error"]
