@@ -115,7 +115,7 @@ class ConversationMemory:
     def _should_summarize(self) -> bool:
         """Check if conversation should be summarized."""
         threshold_tokens = int(self.max_tokens * self.summarization_threshold)
-        return self.current_tokens > threshold_tokens
+        return self.current_tokens >= threshold_tokens
     
     def _summarize_conversation(self) -> None:
         """Summarize the conversation using Ready Tensor advanced techniques."""

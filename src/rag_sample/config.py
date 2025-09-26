@@ -48,8 +48,8 @@ class Config:
         self.documents_path = os.getenv("DOCUMENTS_PATH", "./documents")
         
         # Conversation memory settings
-        self.max_conversation_tokens = int(os.getenv("MAX_CONVERSATION_TOKENS", "4000"))
-        self.summarization_threshold = float(os.getenv("SUMMARIZATION_THRESHOLD", "0.8"))
+        self.max_conversation_tokens = int(os.getenv("MAX_CONVERSATION_TOKENS", "1000"))  # Reduced from 4000 to 1000
+        self.summarization_threshold = float(os.getenv("SUMMARIZATION_THRESHOLD", "0.6"))  # Reduced from 0.8 to 0.6
         self.enable_conversation_memory = os.getenv("ENABLE_CONVERSATION_MEMORY", "true").lower() == "true"
         
         # Document retrieval settings

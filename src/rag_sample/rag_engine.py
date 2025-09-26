@@ -316,7 +316,7 @@ Answer:"""
             
             # Add assistant response to conversation memory
             if self.conversation_memory:
-                self.conversation_memory.add_message("assistant", result)
+                self.conversation_memory.add_message("assistant", validated_response)
             
             return result.get("result", "RESULT NOT FOUND")
         except Exception as e:
