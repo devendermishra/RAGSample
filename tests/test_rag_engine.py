@@ -22,10 +22,15 @@ class TestRAGEngine:
         self.mock_collection = Mock()
         
         with patch('src.rag_sample.rag_engine.setup_llm', return_value=self.mock_llm), \
-             patch('src.rag_sample.rag_engine.HuggingFaceEmbeddings', return_value=self.mock_embeddings), \
-             patch('src.rag_sample.rag_engine.chromadb.PersistentClient') as mock_client:
+             patch('langchain_huggingface.HuggingFaceEmbeddings', return_value=self.mock_embeddings), \
+             patch('src.rag_sample.rag_engine.chromadb.PersistentClient') as mock_client, \
+             patch('src.rag_sample.rag_engine.DocumentManager') as mock_doc_manager, \
+             patch('src.rag_sample.rag_engine.RetrievalEngine') as mock_retrieval_engine:
             
             mock_client.return_value.get_or_create_collection.return_value = self.mock_collection
+            mock_doc_manager.return_value.load_documents.return_value = None
+            mock_retrieval_engine.return_value = Mock()
+            
             self.rag_engine = RAGEngine(config=self.config)
     
     def test_rag_engine_initialization(self) -> None:
@@ -39,11 +44,9 @@ class TestRAGEngine:
         """Test chat functionality with valid question."""
         # Mock the retrieval and LLM response
         mock_docs = [Mock(page_content="Test content", metadata={"source": "test.pdf"})]
-        self.mock_collection.query.return_value = {
-            'documents': [["Test content"]],
-            'metadatas': [[{"source": "test.pdf"}]],
-            'distances': [[0.5]]
-        }
+        
+        # Mock the retrieval engine
+        self.rag_engine.retrieval_engine.retrieve_documents.return_value = mock_docs
         
         self.mock_llm.invoke.return_value = Mock(content="Test response")
         

@@ -87,23 +87,22 @@ class TestConfigComprehensive:
     
     def test_config_validation_missing_api_key(self) -> None:
         """Test config validation with missing API key."""
-        # Remove API key from environment
-        if 'GROQ_API_KEY' in os.environ:
-            del os.environ['GROQ_API_KEY']
-        
-        config = Config()
-        config.groq_api_key = None
-        
-        with pytest.raises(ConfigurationError):
-            config._validate()
+        with patch.dict(os.environ, {}, clear=True), \
+             patch('src.rag_sample.config.load_dotenv') as mock_load_dotenv:
+            mock_load_dotenv.return_value = None
+            with pytest.raises(ConfigurationError):
+                config = Config()
     
     def test_config_validation_empty_api_key(self) -> None:
         """Test config validation with empty API key."""
-        config = Config()
-        config.groq_api_key = ""
-        
-        with pytest.raises(ConfigurationError):
-            config._validate()
+        with patch.dict(os.environ, {
+            "OPENAI_API_KEY": "",
+            "GOOGLE_API_KEY": "",
+            "GROQ_API_KEY": ""
+        }), patch('src.rag_sample.config.load_dotenv') as mock_load_dotenv:
+            mock_load_dotenv.return_value = None
+            with pytest.raises(ConfigurationError):
+                config = Config()
     
     def test_config_to_dict(self) -> None:
         """Test config to dictionary conversion."""
@@ -305,21 +304,21 @@ class TestConfigComprehensive:
     
     def test_config_validation_error_message(self) -> None:
         """Test config validation error message."""
-        config = Config()
-        config.groq_api_key = None
-        
-        with pytest.raises(ConfigurationError) as exc_info:
-            config._validate()
-        
-        assert "At least one API key is required" in str(exc_info.value)
+        with patch.dict(os.environ, {}, clear=True), \
+             patch('src.rag_sample.config.load_dotenv') as mock_load_dotenv:
+            mock_load_dotenv.return_value = None
+            with pytest.raises(ConfigurationError) as exc_info:
+                config = Config()
+            
+            assert "At least one API key is required" in str(exc_info.value)
     
     def test_config_validation_error_code(self) -> None:
         """Test config validation error code."""
-        config = Config()
-        config.groq_api_key = None
-        
-        with pytest.raises(ConfigurationError) as exc_info:
-            config._validate()
-        
-        assert hasattr(exc_info.value, 'error_code')
-        assert exc_info.value.error_code == "MISSING_API_KEY"
+        with patch.dict(os.environ, {}, clear=True), \
+             patch('src.rag_sample.config.load_dotenv') as mock_load_dotenv:
+            mock_load_dotenv.return_value = None
+            with pytest.raises(ConfigurationError) as exc_info:
+                config = Config()
+            
+            assert hasattr(exc_info.value, 'error_code')
+            assert exc_info.value.error_code == "MISSING_API_KEY"

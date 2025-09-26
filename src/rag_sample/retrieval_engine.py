@@ -9,6 +9,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from .config import Config
 from .logging_config import get_logger
 from .retrieval_helper import is_content_relevant
+from .llm_setup import embed_query
 
 logger = get_logger(__name__)
 
@@ -38,8 +39,17 @@ class RetrievalEngine:
             List of relevant documents
         """
         try:
-            # Generate embedding for the question
-            question_embedding = self.embeddings.embed_query(question)
+            # Generate embedding for the question using improved embeddings function
+            logger.info(f"Generating embedding for question: {question[:50]}...")
+            try:
+                # Try improved embeddings function first
+                question_embedding = embed_query(question)
+                logger.info(f"Generated embedding with dimension: {len(question_embedding)}")
+            except Exception as embed_error:
+                logger.warning(f"Improved embeddings failed, falling back to original: {embed_error}")
+                # Fallback to original embeddings method
+                question_embedding = self.embeddings.embed_query(question)
+                logger.info(f"Fallback embedding generated with dimension: {len(question_embedding)}")
             
             # Query ChromaDB collection
             results = self.collection.query(
@@ -64,7 +74,7 @@ class RetrievalEngine:
             
             return filtered_docs
         except Exception as e:
-            print(f"Error retrieving documents: {str(e)}")
+            logger.error(f"Error retrieving documents: {str(e)}")
             return []
     
     def _filter_and_rank_documents(self, docs_with_scores: List[tuple], question: str) -> List[Document]:
@@ -76,13 +86,20 @@ class RetrievalEngine:
             Filtered and ranked list of Documents
         """
         filtered_docs = []
+        seen_docs = set()  # Track unique documents by content hash
         
         for doc, score in docs_with_scores:
             # Apply similarity threshold
             if score <= self.config.retrieval_threshold:
                 # Apply Ready Tensor's content relevance check
                 if is_content_relevant(doc, question):
-                    filtered_docs.append(doc)
+                    # Create a unique identifier for the document
+                    doc_id = hash(doc.page_content)
+                    
+                    # Only add if we haven't seen this document before
+                    if doc_id not in seen_docs:
+                        seen_docs.add(doc_id)
+                        filtered_docs.append(doc)
         
         # Limit to top_k results
         return filtered_docs[:self.config.retrieval_top_k]

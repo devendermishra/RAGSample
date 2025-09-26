@@ -42,22 +42,17 @@ class TestConfig:
     
     def test_config_validation(self) -> None:
         """Test config validation."""
-        # Test with missing API key
-        original_key = os.environ.get("GROQ_API_KEY")
-        if "GROQ_API_KEY" in os.environ:
-            del os.environ["GROQ_API_KEY"]
-        
-        try:
-            # Create a new config instance without API key
-            config = Config()
-            config.groq_api_key = None  # Manually set to None
+        # Test with missing API key using patch
+        with patch.dict(os.environ, {}, clear=True), \
+             patch('src.rag_sample.config.load_dotenv') as mock_load_dotenv:
+            # Mock load_dotenv to not load any environment variables
+            mock_load_dotenv.return_value = None
+            
+            # Create a new config instance without any API keys
             with pytest.raises(ConfigurationError) as e:
-                config._validate()
+                config = Config()
             assert "At least one API key is required" in str(e.value)
             assert e.value.error_code == "MISSING_API_KEY"
-        finally:
-            if original_key:
-                os.environ["GROQ_API_KEY"] = original_key
     
     def test_config_to_dict(self) -> None:
         """Test config to dictionary conversion."""

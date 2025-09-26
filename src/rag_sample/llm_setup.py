@@ -3,11 +3,101 @@ LLM Setup utility for supporting multiple LLM providers.
 """
 
 import os
-from typing import Optional, Any
+from typing import Optional, Any, List
 from .logging_config import get_logger
 from .exceptions import ConfigurationError
 
 logger = get_logger(__name__)
+
+
+def embed_documents(documents: List[str]) -> List[List[float]]:
+    """
+    Embed documents using a model with device detection.
+    
+    Args:
+        documents: List of document texts to embed
+        
+    Returns:
+        List of embedding vectors for each document
+    """
+    try:
+        import torch
+        from langchain_huggingface import HuggingFaceEmbeddings
+        
+        # Device detection with priority: CUDA > MPS > CPU
+        device = (
+            "cuda"
+            if torch.cuda.is_available()
+            else "mps" if torch.backends.mps.is_available() else "cpu"
+        )
+        
+        logger.info(f"Using device: {device} for embeddings")
+        
+        # Initialize embeddings model with device specification
+        model = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={"device": device},
+        )
+
+        # Generate embeddings for all documents
+        embeddings = model.embed_documents(documents)
+        logger.info(f"Generated embeddings for {len(documents)} documents")
+        
+        return embeddings
+        
+    except ImportError as e:
+        error_msg = f"Required packages not installed for embeddings: {str(e)}"
+        logger.error(error_msg)
+        raise ConfigurationError(error_msg, "MISSING_DEPENDENCY")
+    except Exception as e:
+        error_msg = f"Error generating embeddings: {str(e)}"
+        logger.error(error_msg)
+        raise ConfigurationError(error_msg, "EMBEDDING_ERROR")
+
+
+def embed_query(query: str) -> List[float]:
+    """
+    Embed a single query using a model with device detection.
+    
+    Args:
+        query: Query text to embed
+        
+    Returns:
+        Embedding vector for the query
+    """
+    try:
+        import torch
+        from langchain_huggingface import HuggingFaceEmbeddings
+        
+        # Device detection with priority: CUDA > MPS > CPU
+        device = (
+            "cuda"
+            if torch.cuda.is_available()
+            else "mps" if torch.backends.mps.is_available() else "cpu"
+        )
+        
+        logger.info(f"Using device: {device} for query embedding")
+        
+        # Initialize embeddings model with device specification
+        model = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={"device": device},
+        )
+
+        # Generate embedding for the query
+        embedding = model.embed_query(query)
+        logger.info("Generated embedding for query")
+        
+        return embedding
+        
+    except ImportError as e:
+        error_msg = f"Required packages not installed for embeddings: {str(e)}"
+        logger.error(error_msg)
+        raise ConfigurationError(error_msg, "MISSING_DEPENDENCY")
+    except Exception as e:
+        error_msg = f"Error generating query embedding: {str(e)}"
+        logger.error(error_msg)
+        raise ConfigurationError(error_msg, "EMBEDDING_ERROR")
 
 
 def setup_llm(model_name: Optional[str] = None, temperature: float = 0.7, 

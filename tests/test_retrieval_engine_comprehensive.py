@@ -113,6 +113,38 @@ class TestRetrievalEngineComprehensive:
         # Skip this test as the method might not exist
         pytest.skip("Method _filter_and_rank_documents might not exist")
     
+    def test_filter_and_rank_documents_duplicates(self) -> None:
+        """Test that duplicate documents are filtered out."""
+        # Mock the is_content_relevant function to always return True
+        with patch('src.rag_sample.retrieval_engine.is_content_relevant', return_value=True):
+            # Create mock documents with duplicates
+            doc1 = Mock()
+            doc1.page_content = "Relevant content about AI"
+            doc1.metadata = {"source": "ai.pdf"}
+            
+            doc2 = Mock()
+            doc2.page_content = "Relevant content about AI"  # Same content as doc1
+            doc2.metadata = {"source": "ai_copy.pdf"}
+            
+            doc3 = Mock()
+            doc3.page_content = "Another relevant content about machine learning"
+            doc3.metadata = {"source": "ml.pdf"}
+            
+            # Create docs_with_scores with duplicates
+            docs_with_scores = [
+                (doc1, 0.3),
+                (doc2, 0.4),  # Duplicate content
+                (doc3, 0.5)
+            ]
+            
+            # Test the method directly
+            result = self.retrieval_engine._filter_and_rank_documents(docs_with_scores, "AI question")
+            
+            # Should only return 2 unique documents, not 3
+            assert len(result) == 2
+            assert result[0].page_content == "Relevant content about AI"
+            assert result[1].page_content == "Another relevant content about machine learning"
+    
     def test_is_content_relevant(self) -> None:
         """Test content relevance checking."""
         # Test relevant content
