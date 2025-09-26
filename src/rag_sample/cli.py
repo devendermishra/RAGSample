@@ -352,10 +352,11 @@ class CLIHandler:
 
 @click.command()
 @click.option('--config', '-c', help='Path to configuration file')
-@click.option('--model', '-m', default='llama3-8b-8192', help='Groq model to use (llama3-8b-8192, llama3-70b-8192, mixtral-8x7b-32768)')
+@click.option('--model', '-m', help='Model to use (overrides LLM_MODEL env variable). Examples: gpt-4o-mini, gemini-2.0-flash, llama3-8b-8192')
+@click.option('--tool', '-l', help="LLM provider to use (overrides auto-detection). One of: openai, gemini/google, groq")
 @click.option('--temperature', '-t', default=0.7, help='Temperature for response generation')
 @click.option('--max-tokens', default=1000, help='Maximum tokens for response')
-def main(config, model, temperature, max_tokens):
+def main(config, model, tool, temperature, max_tokens):
     """RAG Sample - Chat with your documents using RAG."""
     
     console.print(Panel.fit(
@@ -368,6 +369,7 @@ def main(config, model, temperature, max_tokens):
         config_obj = Config(config_path=config)
         rag_engine = RAGEngine(
             model=model,
+            tool=tool,
             temperature=temperature,
             max_tokens=max_tokens,
             config=config_obj

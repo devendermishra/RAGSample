@@ -29,8 +29,12 @@ class Config:
             load_dotenv()  # .env in current directory
             load_dotenv(Path.home() / ".rag_sample" / ".env")  # User config
         
+        # LLM configuration - support multiple providers
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.groq_api_key = os.getenv("GROQ_API_KEY")
-        self.groq_model = os.getenv("GROQ_MODEL", "llama3-8b-8192")
+        self.llm_model = os.getenv("LLM_MODEL")  # New unified model variable
+        self.groq_model = os.getenv("GROQ_MODEL", "llama3-8b-8192")  # Keep for backward compatibility
         self.temperature = float(os.getenv("TEMPERATURE", "0.7"))
         self.max_tokens = int(os.getenv("MAX_TOKENS", "1000"))
         self.vector_db_collection = os.getenv("VECTOR_DB_COLLECTION", "rag_sample_collection")
@@ -65,10 +69,14 @@ class Config:
         """Validate configuration settings."""
         logger.info("Validating configuration settings")
         
-        if not self.groq_api_key:
+        # Check for at least one API key
+        if not any([self.openai_api_key, self.google_api_key, self.groq_api_key]):
             error_msg = (
-                "GROQ_API_KEY is required. Please set it in your environment "
-                "or create a .env file with GROQ_API_KEY=your_key_here"
+                "At least one API key is required. Please set one of the following:\n"
+                "  - OPENAI_API_KEY (for OpenAI models)\n"
+                "  - GOOGLE_API_KEY (for Gemini models)\n"
+                "  - GROQ_API_KEY (for Groq models)\n"
+                "Priority order: OPENAI_API_KEY > GOOGLE_API_KEY > GROQ_API_KEY"
             )
             logger.error(error_msg)
             raise ConfigurationError(error_msg, "MISSING_API_KEY")

@@ -6,7 +6,6 @@ import os
 from typing import List, Optional, Dict, Any
 import chromadb
 from chromadb.config import Settings
-from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from .config import Config
@@ -15,6 +14,7 @@ from .prompt_builder import PromptManager
 from .document_manager import DocumentManager
 from .retrieval_engine import RetrievalEngine
 from .logging_config import get_logger
+from .llm_setup import setup_llm
 
 logger = get_logger(__name__)
 
@@ -23,19 +23,23 @@ class RAGEngine:
     """RAG Engine for document-based question answering."""
     
     def __init__(self, model: str = None, temperature: float = None, 
-                 max_tokens: int = None, config: Optional[Config] = None):
+                 max_tokens: int = None, config: Optional[Config] = None,
+                 tool: Optional[str] = None):
         """Initialize RAG Engine.
         
         Args:
-            model: Groq model to use (uses config if None)
+            model: LLM model to use (uses config if None)
             temperature: Temperature for response generation (uses config if None)
             max_tokens: Maximum tokens for response (uses config if None)
             config: Configuration object
+            tool: LLM provider to use ('openai', 'gemini'/'google', 'groq')
         """
         self.config = config or Config()
-        self.model = model or self.config.groq_model
+        # Prefer unified LLM_MODEL from config if no CLI model provided; fallback to legacy groq_model
+        self.model = model or getattr(self.config, 'llm_model', None) or self.config.groq_model
         self.temperature = temperature if temperature is not None else self.config.temperature
         self.max_tokens = max_tokens if max_tokens is not None else self.config.max_tokens
+        self.tool = tool
         
         # Initialize components
         self._setup_embeddings()
@@ -68,11 +72,12 @@ class RAGEngine:
         )
     
     def _setup_llm(self):
-        """Setup language model."""
-        self.llm = ChatGroq(
-            model=self.model,
+        """Setup language model using the new LLM setup utility."""
+        self.llm = setup_llm(
+            model_name=self.model,
             temperature=self.temperature,
-            max_tokens=self.max_tokens
+            max_tokens=self.max_tokens,
+            tool=self.tool
         )
     
     def _setup_vectorstore(self):

@@ -7,7 +7,7 @@ A sample command line (CLI) based conversational RAG (Retrieval-Augmented Genera
 - 📄 Document ingestion (PDF, TXT, MD files)
 - 🔍 Vector-based document search using ChromaDB
 - 💬 Interactive CLI chat interface
-- 🤖 Groq LLM integration (Llama, Mixtral models)
+- 🤖 Multiple LLM provider support (OpenAI, Google Gemini, Groq)
 - ⚙️ Configurable settings
 - 🎨 Rich terminal interface
 - 🧪 Comprehensive test suite
@@ -29,7 +29,10 @@ A sample command line (CLI) based conversational RAG (Retrieval-Augmented Genera
 ### Prerequisites
 
 - Python 3.8 or higher
-- Groq API key (get one at https://console.groq.com/)
+- At least one API key from the following providers:
+  - **OpenAI API key** (get one at https://platform.openai.com/api-keys)
+  - **Google API key** (get one at https://makersuite.google.com/app/apikey)
+  - **Groq API key** (get one at https://console.groq.com/)
 
 ### Installation
 
@@ -59,7 +62,7 @@ A sample command line (CLI) based conversational RAG (Retrieval-Augmented Genera
 5. **Configure your API key:**
    ```bash
    cp env.example .env
-   # Edit .env and add your Groq API key
+   # Edit .env and add at least one API key (OpenAI, Google, or Groq)
    ```
 
 6. **Run the application:**
@@ -122,9 +125,21 @@ Assistant: Here are the key points from the document:
 
 The application can be configured through environment variables or a `.env` file:
 
-- `GROQ_API_KEY`: Your Groq API key (required)
-- `GROQ_MODEL`: Model to use (default: llama3-8b-8192)
-  - Available models: `llama3-8b-8192`, `llama3-70b-8192`, `mixtral-8x7b-32768`
+### LLM Provider Configuration
+
+The application supports multiple LLM providers with automatic fallback:
+
+**Priority Order:** `OPENAI_API_KEY` > `GOOGLE_API_KEY` > `GROQ_API_KEY`
+
+- `OPENAI_API_KEY`: Your OpenAI API key (highest priority)
+- `GOOGLE_API_KEY`: Your Google API key for Gemini models
+- `GROQ_API_KEY`: Your Groq API key (fallback)
+- `LLM_MODEL`: Model to use (unified across providers)
+  - OpenAI models: `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`
+  - Gemini models: `gemini-2.0-flash`, `gemini-1.5-pro`
+  - Groq models: `llama3-8b-8192`, `llama3-70b-8192`, `mixtral-8x7b-32768`
+
+### Application Settings
 - `TEMPERATURE`: Response creativity (default: 0.7)
 - `MAX_TOKENS`: Maximum response length (default: 1000)
 - `VECTOR_DB_PATH`: Path to vector database (default: ./data/vector_db)

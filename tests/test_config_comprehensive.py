@@ -311,7 +311,7 @@ class TestConfigComprehensive:
         with pytest.raises(ConfigurationError) as exc_info:
             config._validate()
         
-        assert "GROQ_API_KEY is required" in str(exc_info.value)
+        assert "At least one API key is required" in str(exc_info.value)
     
     def test_config_validation_error_code(self) -> None:
         """Test config validation error code."""

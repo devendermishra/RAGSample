@@ -21,7 +21,7 @@ class TestRAGEngine:
         self.mock_embeddings = Mock()
         self.mock_collection = Mock()
         
-        with patch('src.rag_sample.rag_engine.ChatGroq', return_value=self.mock_llm), \
+        with patch('src.rag_sample.rag_engine.setup_llm', return_value=self.mock_llm), \
              patch('src.rag_sample.rag_engine.HuggingFaceEmbeddings', return_value=self.mock_embeddings), \
              patch('src.rag_sample.rag_engine.chromadb.PersistentClient') as mock_client:
             

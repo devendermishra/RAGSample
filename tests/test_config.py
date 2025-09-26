@@ -53,7 +53,7 @@ class TestConfig:
             config.groq_api_key = None  # Manually set to None
             with pytest.raises(ConfigurationError) as e:
                 config._validate()
-            assert "GROQ_API_KEY is required" in str(e.value)
+            assert "At least one API key is required" in str(e.value)
             assert e.value.error_code == "MISSING_API_KEY"
         finally:
             if original_key:
