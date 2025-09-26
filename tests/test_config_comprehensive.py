@@ -5,7 +5,7 @@ Comprehensive tests for configuration functionality.
 import pytest
 import tempfile
 import os
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from src.rag_sample.config import Config
 from src.rag_sample.exceptions import ConfigurationError
@@ -25,7 +25,7 @@ class TestConfigComprehensive:
         if 'GROQ_API_KEY' in os.environ:
             del os.environ['GROQ_API_KEY']
     
-    def test_config_initialization_default(self) -> None:
+    def test_config_init_default(self) -> None:
         """Test config initialization with default values."""
         config = Config()
         assert config.groq_model == "llama-3.1-8b-instant"
@@ -35,7 +35,7 @@ class TestConfigComprehensive:
         assert config.documents_path == "./documents"
         assert config.groq_api_key == "test-api-key"
     
-    def test_config_initialization_with_env_file(self) -> None:
+    def test_config_init_env_file(self) -> None:
         """Test config initialization with environment file."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
             f.write("GROQ_MODEL=test-model\n")
@@ -60,7 +60,7 @@ class TestConfigComprehensive:
             
             os.unlink(f.name)
     
-    def test_config_initialization_with_env_variables(self) -> None:
+    def test_config_init_env_vars(self) -> None:
         """Test config initialization with environment variables."""
         os.environ['GROQ_MODEL'] = 'env-model'
         os.environ['TEMPERATURE'] = '0.3'
