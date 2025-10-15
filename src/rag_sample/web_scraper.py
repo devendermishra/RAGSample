@@ -193,17 +193,15 @@ class WebScraper:
         
         return metadata
     
-    def _extract_text_content(self, html_content: str) -> str:
+    def _extract_text_content(self, soup: BeautifulSoup) -> str:
         """Extract main text content from the page.
         
         Args:
-            html_content: HTML content as string
+            soup: HTML content as string
             
         Returns:
             Extracted text content
         """
-        # Parse HTML content
-        soup = BeautifulSoup(html_content, 'html.parser')
         
         # Remove unwanted elements
         for element in soup.find_all(["script", "style", "nav", "footer", "header", "aside", "noscript"]):
